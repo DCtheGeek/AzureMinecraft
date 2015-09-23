@@ -58,7 +58,7 @@
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "nsgName": "[concat(variables('nameTemplate'),'NSG')]",
     "dscName": "[concat(variables('nameTemplate'),'DSC')]",
-    "dscZIP": "https://github.com/DCtheGeek/AzureMinecraft/blob/master/SingleServer/DSC_SingleServer.ps1.zip",
+    "dscZIP": "https://github.com/DCtheGeek/AzureMinecraft/raw/master/SingleServer/DSC_SingleServer.ps1.zip",
     "dscConfig": "DSC_SingleServer.ps1\\SingleServer"
   },
   "resources": [
