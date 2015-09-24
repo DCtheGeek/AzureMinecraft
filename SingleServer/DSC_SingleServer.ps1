@@ -5,6 +5,16 @@ Configuration SingleServer {
 
 	# Setup the server
 	Node ('localhost') {
+
+		# Configure LCM for AutoCorrect
+		LocalConfigurationManager {
+			ConfigurationMode = "ApplyAndAutoCorrect"
+			RefreshFrequencyMins = 30
+			ConfigurationModeFrequencyMins = 60
+			RefreshMode = "PUSH"
+			RebootNodeIfNeeded = $true
+		}
+
 		# Install - .NET 3.5
 		WindowsFeature NET35 {
 			Name = "NET-Framework-Core"
@@ -83,6 +93,14 @@ Configuration SingleServer {
             TestScript = { (Get-Package | Where-Object {$_.Name -eq 'minecraft'}).Count -eq 1 }
             SetScript = "Install-Package minecraft -Source CreeperHub -ProviderName chocolatey  -Force"
             DependsOn = "[WindowsFeature]NET35","[Script]fileJava","[Package]installJava","[File]MinecraftFolder","[Environment]MinecraftRoot","[Script]CreeperHubSource","[xFirewall]MinecraftFW"
+        }
+
+		# Run - Minecraft (via Java)
+        Script MinecraftRunning {
+            GetScript = "Get-Process -Name java"
+            TestScript = { (Get-WmiObject Win32_Process -Filter {CommandLine like '%minecraft_server.jar%'} | Measure-Object).Count -eq 1 }
+            SetScript = { Start-Process -FilePath "C:\Program Files (x86)\Java\jre1.8.0_60\bin\java.exe" -ArgumentList "-Xmx1024M -Xms1024M -jar C:\Minecraft\minecraft_server.jar nogui" -WorkingDirectory C:\Minecraft }
+			DependsOn = "[Script]MinecraftInstall"
         }
 	}
 }
