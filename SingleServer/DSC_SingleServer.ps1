@@ -1,6 +1,6 @@
 Configuration SingleServer {
 	# Import Custom Resources
-	Import-DscResource -Module PackageManagementProviderResource,xNetworking
+	Import-DscResource -Module xNetworking
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
 
 	# Setup the server
@@ -11,19 +11,24 @@ Configuration SingleServer {
 			Ensure = "Present"
 		}
 
-		# Install - Chocolatey Package Provider (beta)
-        Script ChocolateyProvider {
-            GetScript = "Get-PackageProvider"
-            TestScript = { (Get-PackageProvider | Where-Object {$_.Name -eq 'Chocolatey'}).Count -eq 1 }
-            SetScript = "Get-PackageProvider -Name Chocolatey -Force -ForceBootstrap"
-        }        
+        # File - Get Java Installer (JRE 8u60)
+        Script fileJava {
+            GetScript = "Get-Item -Path C:\Installs\jre-8u60-windows-i586.exe"
+            TestScript = "Test-Path C:\Installs\jre-8u60-windows-i586.exe"
+            SetScript = {
+                New-Item -ItemType Container -Path C:\Installs -Force
+                Invoke-WebRequest "http://javadl.sun.com/webapps/download/AutoDL?BundleId=109706" -OutFile C:\Installs\jre-8u60-windows-i586.exe
+            }
+        }
 
-        # Install - Java (via Chocolatey)
-        Script JavaInstall {
-            GetScript = "Get-Package"
-            TestScript = { (Get-Package | Where-Object {$_.Name -eq 'jre8'}).Count -eq 1 }
-            SetScript = "Install-Package jre8 -ProviderName chocolatey -Force -ForceBootstrap"
-            DependsOn = "[Script]ChocolateyProvider"
+        # Install - Java (JRE 8u60)
+        Package installJava {
+            Name = "Install Java"
+            Path = "C:\Installs\jre-8u60-windows-i586.exe"
+            Arguments = "/s /l*vx C:\Installs\jre-8u60-windows-i586.log"
+            ProductID = "26A24AE4-039D-4CA4-87B4-2F83218060F0"
+            Ensure = "Present"
+            DependsOn = "[Script]fileJava"
         }
 
 		# Setting - Disable Java Autoupdate
@@ -32,7 +37,7 @@ Configuration SingleServer {
             ValueName = "0"
             ValueType = "Dword"
             Ensure = "Present"
-            DependsOn = "[Script]JavaInstall"
+            DependsOn = "[Package]installJava"
 		}
 
 		# Folder - Minecraft
@@ -77,7 +82,7 @@ Configuration SingleServer {
             GetScript = "Get-Package"
             TestScript = { (Get-Package | Where-Object {$_.Name -eq 'minecraft'}).Count -eq 1 }
             SetScript = "Install-Package minecraft -Source CreeperHub -ProviderName chocolatey  -Force"
-            DependsOn = "[WindowsFeature]NET35","[Script]ChocolateyProvider","[Script]JavaInstall","[File]MinecraftFolder","[Environment]MinecraftRoot","[Script]CreeperHubSource","[xFirewall]MinecraftFW"
+            DependsOn = "[WindowsFeature]NET35","[Script]fileJava","[Package]installJava","[File]MinecraftFolder","[Environment]MinecraftRoot","[Script]CreeperHubSource","[xFirewall]MinecraftFW"
         }
 	}
 }
