@@ -22,7 +22,7 @@ Configuration SingleServer {
         Script JavaInstall {
             GetScript = "Get-Package"
             TestScript = { (Get-Package | Where-Object {$_.Name -eq 'jre8'}).Count -eq 1 }
-            SetScript = "Install-Package jre8 -ProviderName chocolatey -Force"
+            SetScript = "Install-Package jre8 -ProviderName chocolatey -Force -ForceBootstrap"
             DependsOn = "[Script]ChocolateyProvider"
         }
 

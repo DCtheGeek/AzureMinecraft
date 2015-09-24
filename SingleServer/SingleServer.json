@@ -235,10 +235,7 @@
                     "autoUpgradeMinorVersion": true,
                     "settings": {
                         "modulesUrl": "[variables('dscZIP')]",
-                        "configurationFunction": "[variables('dscConfig')]",
-                        "properties": {
-                            "nodeName": "[variables('vmName')]"
-                        }
+                        "configurationFunction": "[variables('dscConfig')]"
                     },
                     "protectedSettings": { }
                 }
