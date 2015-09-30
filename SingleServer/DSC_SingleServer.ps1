@@ -1,7 +1,69 @@
 Configuration SingleServer {
+	# Parameters
+    param(  
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcEULA,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcServerName,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcServerMOTD,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcUserName,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcDifficulty,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcLevelName,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcGameMode,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcWhiteList,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcEnableCommandBlock,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcSpawnMonsters,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcGenerateStructures,
+
+		[Parameter(Mandatory=$true)]  
+		[ValidateNotNullorEmpty()]  
+		[string]
+		$mcLevelSeed
+	)
+
 	# Import Custom Resources
-	Import-DscResource -Module xNetworking
-    Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
+    Import-DscResource -ModuleName 'PSDesiredStateConfiguration','xNetworking'
 
 	# Setup the server
 	Node ('localhost') {
@@ -86,6 +148,422 @@ Configuration SingleServer {
 			Description = "Minecraft Server exception"
 			Ensure = "Present"
 		}
+
+        # Setting - EULA for Minecraft (eula.txt)
+        Script mcEULA {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\eula.txt") {
+                    $file = Get-Content "C:\Minecraft\eula.txt"  
+                    $containsKeyValue = $file | %{$_ -match "eula=$using:mcEULA"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\eula.txt") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\eula.txt" "eula=$using:mcEULA"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\eula.txt"
+                    $file = $file | Where-Object {$_ -notmatch "eula="}
+                    $file | Set-Content "C:\Minecraft\eula.txt" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\eula.txt" "eula=$using:mcEULA"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Server Name for Minecraft (server.properties)
+        Script mcServerName {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "server-name=$using:mcServerName"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "server-name=$using:mcServerName"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "server-name="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "server-name=$using:mcServerName"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Message of the Day for Minecraft (server.properties)
+		Script mcServerMOTD {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "motd=$using:mcServerMOTD"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "motd=$using:mcServerMOTD"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "motd="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "motd=$using:mcServerMOTD"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Difficulty for Minecraft (server.properties)
+		Script mcDifficulty {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "difficulty=$using:mcDifficulty"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "difficulty=$using:mcDifficulty"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "difficulty="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "difficulty=$using:mcDifficulty"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Level Name for Minecraft (server.properties)
+		Script mcLevelName {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "level-name=$using:mcLevelName"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "level-name=$using:mcLevelName"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "level-name="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "level-name=$using:mcLevelName"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Game Mode for Minecraft (server.properties)
+		Script mcGameMode {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "gamemode=$using:mcGameMode"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "gamemode=$using:mcGameMode"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "gamemode="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "gamemode=$using:mcGameMode"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - White List for Minecraft (server.properties)
+		Script mcWhiteList {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "white-list=$using:mcWhiteList"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "white-list=$using:mcWhiteList"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "white-list="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "white-list=$using:mcWhiteList"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Enable Command Block for Minecraft (server.properties)
+		Script mcEnableCommandBlock {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "enable-command-block=$using:mcEnableCommandBlock"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "enable-command-block=$using:mcEnableCommandBlock"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "enable-command-block="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "enable-command-block=$using:mcEnableCommandBlock"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Spawn Monsters for Minecraft (server.properties)
+		Script mcSpawnMonsters {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "spawn-monsters=$using:mcSpawnMonsters"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "spawn-monsters=$using:mcSpawnMonsters"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "spawn-monsters="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "spawn-monsters=$using:mcSpawnMonsters"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Generate Structures for Minecraft (server.properties)
+		Script mcGenerateStructures {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "generate-structures=$using:mcGenerateStructures"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "generate-structures=$using:mcGenerateStructures"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "generate-structures="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "generate-structures=$using:mcGenerateStructures"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Level Seed for Minecraft (server.properties)
+		Script mcLevelSeed {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\server.properties") {
+                    $file = Get-Content "C:\Minecraft\server.properties"  
+                    $containsKeyValue = $file | %{$_ -match "level-seed=$using:mcLevelSeed"}
+                    if ($containsKeyValue -contains $true) {
+                        return $true
+                    } else {
+                        return $false
+                    }
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Check to see if file exists, create if it doesn't
+                if ((Test-Path "C:\Minecraft\server.properties") -eq $false) {
+                    # Create and add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "level-seed=$using:mcLevelSeed"
+                } else {
+                    # Remove the line that is no longer correct
+                    $file = Get-Content "C:\Minecraft\server.properties"
+                    $file = $file | Where-Object {$_ -notmatch "level-seed="}
+                    $file | Set-Content "C:\Minecraft\server.properties" -Force
+
+                    # Add the new string to the file
+                    Add-Content "C:\Minecraft\server.properties" "level-seed=$using:mcLevelSeed"
+                }
+            }
+            DependsOn = "[File]MinecraftFolder"
+        }
+
+		# Setting - Fix IE RunOnce for SYSTEM to allow Invoke-WebRequest in [Script]mcUserName
+		Registry FixSystemRunOnce {
+			Key = "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Explorer\Main\RunOnceComplete"
+            ValueName = "1"
+            ValueType = "Dword"
+            Ensure = "Present"
+		}
+
+		# Setting - User Name as Operator for Minecraft (ops.json with Mojang API call)
+        Script mcUserName {
+            GetScript = { }
+            TestScript = {
+                if (Test-Path "C:\Minecraft\ops.json") {
+                    $file = Get-Content "C:\Minecraft\ops.json" | ConvertFrom-Json
+                    $match = $false
+                    $file | ForEach-Object {
+                        if (($_.name -eq "$using:mcUserName") -and ($_.level -eq 4)) {
+                            $match = $true
+                        }
+                    }
+                    return $match
+                } else {
+                    return $false
+                }
+            }
+            SetScript = {
+                # Local Variable
+                $urlUUID = "https://api.mojang.com/users/profiles/minecraft/$using:mcUserName"
+
+                # Check to see if file exists, delete to clean up
+                if ((Test-Path "C:\Minecraft\ops.json")) {
+                    Remove-Item -Path "C:\Minecraft\ops.json" -Force
+                }
+
+                # Set only Op as what was passed to DSC
+                $apiObj = Invoke-WebRequest $urlUUID | ConvertFrom-Json
+                $mcUUID = $apiObj[0].id.Substring(0,8) + "-" + $apiObj[0].id.Substring(8,4) + "-" + $apiObj[0].id.Substring(12,4) + "-" + $apiObj[0].id.Substring(16,4) + "-" + $apiObj[0].id.Substring(20,12)
+                "[`n {`n  ""uuid"":""$mcUUID"",`n  ""name"":""$mcUserName"",`n  ""level"":4`n }`n]" | Add-Content "C:\Minecraft\ops.json"
+            }
+            DependsOn = "[File]MinecraftFolder","[Registry]FixSystemRunOnce"
+        }
 
 		# Install - Minecraft (via Chocolatey)
         Script MinecraftInstall {

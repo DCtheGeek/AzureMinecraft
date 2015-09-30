@@ -2,6 +2,135 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A3",
+      "allowedValues": [
+        "Standard_A1",
+        "Standard_A2",
+        "Standard_A3",
+        "Standard_A4"
+      ],
+      "metadata": {
+        "description": "Size of the VM to create your Minecraft Server (Note: Impacts speed as well as cost.)"
+      }
+    },
+    "mcEULA": {
+      "type": "string",
+      "defaultValue": "false",
+      "allowedValues": [
+        "false",
+        "true"
+      ],
+      "metadata": {
+        "description": "By changing the setting below to TRUE you are indicating your agreement to the Mojang EULA (https://account.mojang.com/documents/minecraft_eula)."
+      }
+    },
+    "mcServerName": {
+      "type": "string",
+      "defaultValue": "Azure Minecraft Server",
+      "metadata": {
+        "description": "Provide the name for your Minecraft Server."
+      }
+    },
+    "mcServerMOTD": {
+      "type": "string",
+      "defaultValue": "Welcome to Minecraft running in Azure!",
+      "metadata": {
+        "description": "Provide a Message of the Day for your Minecraft Server."
+      }
+    },
+    "mcUserName": {
+      "type": "string",
+      "defaultValue": "YourNameHere",
+      "metadata": {
+        "description": "Provide your Minecraft name to be made an admin."
+      }
+    },
+    "mcDifficulty": {
+      "type": "string",
+      "defaultValue": "1",
+      "allowedValues": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "metadata": {
+        "description": "0 - Peaceful, 1 - Easy, 2 - Normal, 3 - Hard"
+      }
+    },
+    "mcLevelName": {
+      "type": "string",
+      "defaultValue": "world",
+      "metadata": {
+        "description": "Name of your world"
+      }
+    },
+    "mcGameMode": {
+      "type": "string",
+      "defaultValue": "0",
+      "allowedValues": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "metadata": {
+        "description": "0 - Survival, 1 - Creative, 2 - Adventure, 3 - Spectator"
+      }
+    },
+    "mcWhiteList": {
+      "type": "string",
+      "defaultValue": "false",
+      "allowedValues": [
+        "false",
+        "true"
+      ],
+      "metadata": {
+        "description": "Only ops and whitelisted players can connect"
+      }
+    },
+    "mcEnableCommandBlock": {
+      "type": "string",
+      "defaultValue": "false",
+      "allowedValues": [
+        "false",
+        "true"
+      ],
+      "metadata": {
+        "description": "enable command blocks"
+      }
+    },
+    "mcSpawnMonsters": {
+      "type": "string",
+      "defaultValue": "true",
+      "allowedValues": [
+        "false",
+        "true"
+      ],
+      "metadata": {
+        "description": "Enables monster spawning"
+      }
+    },
+    "mcGenerateStructures": {
+      "type": "string",
+      "defaultValue": "true",
+      "allowedValues": [
+        "false",
+        "true"
+      ],
+      "metadata": {
+        "description": "Generates villages etc."
+      }
+    },
+    "mcLevelSeed": {
+      "type": "string",
+      "defaultValue": " ",
+      "metadata": {
+        "description": "Add a seed for your world"
+      }
+    },
     "newStorageAccountName": {
       "type": "string",
       "metadata": {
@@ -52,7 +181,6 @@
     "publicIPAddressType": "Dynamic",
     "vmStorageAccountContainerName": "vhds",
     "vmName": "Minecraft-VM",
-    "vmSize": "Standard_A3",
     "virtualNetworkName": "[concat(variables('nameTemplate'),'VNET')]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
@@ -185,7 +313,7 @@
       ],
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[variables('vmSize')]"
+          "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
           "computerName": "[variables('vmName')]",
@@ -216,31 +344,45 @@
           ]
         }
       },
-        "resources": [
-            {
-                "name": "Microsoft.Powershell.DSC",
-                "type": "extensions",
-                "location": "[resourceGroup().location]",
-                "apiVersion": "2015-05-01-preview",
-                "dependsOn": [
-                    "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
-                ],
-                "tags": {
-                    "displayName": "Microsoft.Powershell.DSC"
-                },
-                "properties": {
-                    "publisher": "Microsoft.Powershell",
-                    "type": "DSC",
-                    "typeHandlerVersion": "2.6",
-                    "autoUpgradeMinorVersion": true,
-                    "settings": {
-                        "modulesUrl": "[variables('dscZIP')]",
-                        "configurationFunction": "[variables('dscConfig')]"
-                    },
-                    "protectedSettings": { }
-                }
-            }
-        ]
+      "resources": [
+        {
+          "name": "Microsoft.Powershell.DSC",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-05-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+          ],
+          "tags": {
+            "displayName": "Microsoft.Powershell.DSC"
+          },
+          "properties": {
+            "publisher": "Microsoft.Powershell",
+            "type": "DSC",
+            "typeHandlerVersion": "2.6",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "modulesUrl": "[variables('dscZIP')]",
+              "configurationFunction": "[variables('dscConfig')]",
+              "Properties": {
+                "mcEULA": "[parameters('mcEULA')]",
+                "mcServerName": "[parameters('mcServerName')]",
+                "mcServerMOTD": "[parameters('mcServerMOTD')]",
+                "mcUserName": "[parameters('mcUserName')]",
+                "mcDifficulty": "[parameters('mcDifficulty')]",
+                "mcLevelName": "[parameters('mcLevelName')]",
+                "mcGameMode": "[parameters('mcGameMode')]",
+                "mcWhiteList": "[parameters('mcWhiteList')]",
+                "mcEnableCommandBlock": "[parameters('mcEnableCommandBlock')]",
+                "mcSpawnMonsters": "[parameters('mcSpawnMonsters')]",
+                "mcGenerateStructures": "[parameters('mcGenerateStructures')]",
+                "mcLevelSeed": "[parameters('mcLevelSeed')]"
+              }
+            },
+            "protectedSettings": { }
+          }
+        }
+      ]
     }
   ]
 }
