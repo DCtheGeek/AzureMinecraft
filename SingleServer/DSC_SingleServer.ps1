@@ -559,8 +559,10 @@ Configuration SingleServer {
 				
                 # Set only Op as what was passed to DSC
                 $apiObj = Invoke-WebRequest $urlUUID -UseBasicParsing | ConvertFrom-Json
-                $mcUUID = $apiObj[0].id.Substring(0,8) + "-" + $apiObj[0].id.Substring(8,4) + "-" + $apiObj[0].id.Substring(12,4) + "-" + $apiObj[0].id.Substring(16,4) + "-" + $apiObj[0].id.Substring(20,12)
-                "[`n {`n  ""uuid"":""$mcUUID"",`n  ""name"":""$using:mcUserName"",`n  ""level"":4`n }`n]" | Add-Content "C:\Minecraft\ops.json"
+                if ($apiObj -ne $NULL) {
+                    $mcUUID = $apiObj[0].id.Substring(0,8) + "-" + $apiObj[0].id.Substring(8,4) + "-" + $apiObj[0].id.Substring(12,4) + "-" + $apiObj[0].id.Substring(16,4) + "-" + $apiObj[0].id.Substring(20,12)
+                    "[`n {`n  ""uuid"":""$mcUUID"",`n  ""name"":""$using:mcUserName"",`n  ""level"":4`n }`n]" | Add-Content "C:\Minecraft\ops.json"
+                }
             }
             DependsOn = "[File]MinecraftFolder","[Registry]FixSystemRunOnce"
         }
